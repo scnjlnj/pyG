@@ -15,7 +15,7 @@ class SocketServer(object):
         # 绑定端口号
         self.ser.bind(ip_port)  # 写哪个ip就要运行在哪台机器上
         # 设置半连接池
-        self.ser.listen(CLINET_MAX)  # 最多可以连接多少个客户端
+        self.ser.listen(CLINET_MAX)  # 最多可以等待多少个客户端
         self.user_list = []
         print("服务器启动成功，正在等待用户连接")
         while 1:
