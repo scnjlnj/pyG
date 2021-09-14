@@ -61,6 +61,21 @@ class Map():
         return True
     def auto_fill(self):
         pass
+    def get_position_slot(self,x,y):
+        if 0<=x<=self.width and 0<=y<=self.lenth:
+            return self.matrix[x][y]
+        else:
+            return None
+    def get_position_adjacent_slots(self, x, y):
+        pass
+    def get_position_interface_info(self,x,y):
+        s = self.matrix[x][y]
+        if s.finish:
+            return None
+        else:
+            adjacent_slots = self.get_position_adjacent_slots(x,y)
+    def get_border_slots(self):
+        return [s for s in self.slots if s.is_border(x=self.width,y=self.lenth)]
     def fill_borders(self,tile):
         border_slots = self.get_border_slots()
         for s in border_slots:
@@ -79,9 +94,6 @@ class Map():
             for s in i:
                 print(s.tile.char_img,end="")
             print("")
-
-    def get_border_slots(self):
-        return [s for s in self.slots if s.is_border(x=self.width,y=self.lenth)]
 
 
 
