@@ -1,0 +1,2 @@
+class AllAttemptFail(Exception):
+    pass

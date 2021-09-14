@@ -106,7 +106,6 @@ if __name__ == '__main__':
     t = Table()
     action=""
     def set_action(s):
-        time.sleep(3)
         action = s
         t.move(action)
         t.spawn(action)
