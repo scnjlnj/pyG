@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <string.h>
+#include <vector>
 using namespace std;
 // Class Slot():
 //     x = None
@@ -277,29 +278,6 @@ using namespace std;
 //             m.auto_fill()
 //         except AllAttemptFail:
 //             print("tiles can not makeup a map")
-class Slot
-{
-private:
-    
-public:
-    Slot() {}
-    ~Slot() {}
-};
-
-class Map
-{
-private:
-    int lenth,width;
-    Slot matrix;
-public:
-    Map(int x,int y,Tile *choice,int tile_size) {
-        
-    }
-    ~Map() {}
-    bool is_finish(){
-        return true
-    }
-};
 
 
 class TileResource
@@ -340,40 +318,273 @@ TileResource::~TileResource()
 class Tile
 {
 private:
-    TileResource* resource;
+    TileResource *resource;
     int rotate_state;
 public:
-    Tile(TileResource& resource,int rotate_state){
+    Tile(TileResource &resource,int rotate_state){
         this->resource=&resource;
         this->rotate_state=rotate_state;
     }
-    ~Tile() {}
+    ~Tile() {
+        // printf("tile destructor call");
+    }
+};
+struct Tiles_and_size
+{
+    Tile **tiles;
+    int size;
 };
 
+Tiles_and_size transform_to_tiles(TileResource *resource,int size_r){
+    Tile* ret[1024];
+    int size=0;
+    for (int i = 0; i < size_r; i++)
+    {
+        for(int j=0;j<8;j++){
+            if (resource[i].rotate[j]){
+                ret[size++] = new Tile(resource[i],j);
+            }
+        }    
+    }
+    Tiles_and_size res = {ret,size};
+    return res;
+}
+class Slot
+{
+private:
+    int x; 
+    int y;
+    int z=0; 
+    Tile *choice[1024];
+    int choice_size; 
+    bool finish; 
+    Tile *tile; 
+public:
+    Slot(int x, int y,Tile **choice,int choice_size):x(x),y(y),choice_size(choice_size),finish(false) {
+        for (int i=0;i<choice_size;i++){
+            this->choice[i] = choice[i];
+        }
+    }
+    Slot(){}
+    ~Slot() {
+        // printf("Slot-(%d,%d) destructor call\n",x,y);
+    }
+    void init(int x, int y,Tile **choice,int choice_size){
+        this->x=x;
+        this->y=y;
+        this->finish=false;
+        this->choice_size=choice_size;
+        for (int i=0;i<choice_size;i++){
+            this->choice[i] = choice[i];
+        }
+    }
+    bool is_finish(){
+        return finish;
+    }
+};
+class Map
+{
+private:
+    int lenth,width;
+    vector<vector<Slot> > matrix;
+    int max_entropy;
+public:
+    Map(int l,int w,Tile **choice,int tile_size) {
+        matrix.resize(w,vector<Slot>(l,Slot()));
+        max_entropy=tile_size;
+        for (int i = l - 1; i >= 0; i--)
+        {
+            for (int j = w - 1; j >= 0; j--)
+            {
+                matrix[j][i].init(j,i,choice,tile_size);
+            }
+            
+        }
+    }
+    ~Map() {
 
+    }
+    bool is_finish(){
+        for (int i = lenth - 1; i >= 0; i--)
+        {
+            for (int j = width - 1; j >= 0; j--)
+            {
+                if(matrix[j][i].is_finish()){
+                    continue;
+                }
+                else{
+                    return false;
+                }
+            }
+            
+        }
+        
+        return true;
+    }
+    void auto_fill(bool border){
+        while (!this->is_finish())
+        {
+            Slot &s = this->choose_lowentropy_slot();
+            s.random_confirm();
+        }
+    }
+    Slot &get_position_slot(int x,int y){
+        return matrix[x][y];
+    }
+    Slot **get_position_adjacent_slots(int x,int y){
+        Slot *ret[9];
+        int xrange[3] = {x-1,x,x+1};
+        int yrange[3] = {y-1,y,y+1};
+        for (int i = 0; i <3; i++)
+        {
+            for (int j = 0; j<3; j++)
+            {
+                ret[3*i+j]=&matrix[i][j];
+            }
+        }
+        return ret;
+    }
+
+    Slot &choose_lowentropy_slot(){
+        int min_lenth = max_entropy;
+        Slot *minslots[1024];
+        int minslots_t=0;
+        for (int i = lenth - 1; i >= 0; i--)
+        {
+            for (int j = width - 1; j >= 0; j--)
+            {
+                Slot &s=this->get_position_slot(j,i);
+                if(s.is_finish()){continue;}
+                int n = this->refresh_position_choice(j,i);
+                if(n==0){throw "AllAttemptFail";}
+                if (n==min_lenth)
+                {
+                    minslots[minslots_t++] = &s;
+                }
+                else if (n>min_lenth)
+                {
+                    continue;
+                }
+                else
+                {
+                    min_lenth = n;
+                    minslots[0] = &s;
+                    minslots_t = 1;
+                }
+            }
+        }
+
+        default_random_engine e;
+        uniform_int_distribution<unsigned> u(0, 9);
+    
+        
+        }
+}
+//     def choose_lowentropy_slot(self):
+//         minchoiceslots = []
+//         min_lenth = float("inf")
+//         for s in self.slots:
+//             if s.finish:
+//                 continue
+//             n = self.refresh_position_choice(s.x, s.y)
+//             if n == 0:
+//                 raise AllAttemptFail
+//             else:
+//                 if n == min_lenth:
+//                     minchoiceslots.append(s)
+//                 elif n > min_lenth:
+//                     continue
+//                 else:
+//                     min_lenth = n
+//                     minchoiceslots = [s]
+//         return random.choice(minchoiceslots)
+//     def auto_fill(self):
+//         while not self.finish:
+//             s = self.choose_lowentropy_slot()
+//             s.random_confirm()
+//     def get_position_slot(self, x, y):
+//         if 0 <= x < self.width and 0 <= y < self.lenth:
+//             return self.matrix[x][y]
+//         else:
+//             return None
+//     def get_position_adjacent_slots(self, x, y):
+//         ret = []
+//         for xx in (x - 1, x, x + 1):
+//             for yy in (y - 1, y, y + 1):
+//                 ret.append(self.get_position_slot(xx, yy))
+//         return ret
+//     def get_position_interface_info(self, x, y):
+//         s = self.matrix[x][y]
+//         if s.finish:
+//             return None
+//         else:
+//             adjacent_slots = self.get_position_adjacent_slots(x, y)
+//             info = [None] * 9
+//             for ind, s in enumerate(adjacent_slots):
+//                 info[ind] = s.get_direction_possible_interfaces(INTERFACE_RELATIVE_INDEX[ind])
+//             return info
+//     def refresh_position_choice(self, x, y):
+//         s = self.matrix[x][y]
+//         interface_info = self.get_position_interface_info(x, y)
+//         return s.refresh_choice(interface_info)
+//     def get_border_slots(self):
+//         return [s for s in self.slots if s.is_border(x=self.width, y=self.lenth)]
+//     def fill_borders(self, tile):
+//         border_slots = self.get_border_slots()
+//         for s in border_slots:
+//             s.comfirm_tile(tile)
+//     def show(self, str_out=False):
+//         if self.finish:
+//             if str_out:
+//                 self.str_output()
+//             else:
+//                 stack_img = N.vstack([N.hstack([s.tile.image for s in row]) for row in self.matrix])
+//                 # cv2.imshow("img",stack_img)
+//                 cv2.imwrite("out.png", stack_img)
+//         else:
+//             print("Not finish Yet")
+//     def str_output(self):
+//         for i in self.matrix:
+//             for s in i:
+//                 print(s.tile.char_img, end="")
+//             print("")
+};
 class MapManager
 {
 private:
-    int size_x;
-    int size_y;
     int tile_size;
-    Tile* tiles;
-    bool border=true;
+    Tile *tiles[1024];
 public:
-    MapManager(int x,int y, Tile* tiles,int tile_size, bool border);
+    MapManager(Tile** tiles,int tile_size);
     ~MapManager();
     Map init_map(int x,int y);
+    void auto_fill_map(Map,bool);
 };
 
-MapManager::MapManager(int x,int y, Tile* tiles,int tile_size, bool border=true)
+MapManager::MapManager(Tile** tiles,int tile_size)
 {
-    this->border=border;
-    this->size_x=x;
-    this->size_y=y;
-    this->tiles = tiles;
+    for (int i=0;i<tile_size;i++){
+            this->tiles[i] = tiles[i];
+        }
     this->tile_size = tile_size;
 }
 
 MapManager::~MapManager()
 {
+    for (int i = tile_size - 1; i >= 0; i--)
+    {
+        delete tiles[i];
+        // cout<<"Tile destuctor call\n";
+
+    }
+    // cout<<"MapManager destuctor call\n";
+    
+}
+Map MapManager::init_map(int x, int y){
+    Map map_ret = {x,y,tiles,tile_size};
+    return map_ret;
+}
+void MapManager::auto_fill_map(Map m, bool border){
+    m.auto_fill(border);
+
 }
