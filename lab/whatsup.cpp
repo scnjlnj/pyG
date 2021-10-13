@@ -50,9 +50,10 @@ int main( ){
     // default_random_engine e(seed);
     // uniform_int_distribution<unsigned> u(0, 9);
     // 一般性：rand() % (b-a+1)+ a ;    就表示  a~b 之间的一个随机整数。
-    for(int i=0; i<10; ++i)
-        cout<<rand()*10/32767<<endl;
-    return 0;
+    Rect *p;
+
+    cout<<"area,perimeter:"<<p->getArea()<<","<<p->getPerimeter()<<endl;
+
 }
     
     // vector<vector<Rect> > rects(w,vector<Rect>(l,Rect(2,3,"2_3_rect")));

@@ -1,7 +1,35 @@
 #include <iostream>
 #include <string.h>
 #include <vector>
+#include <map>
 using namespace std;
+
+
+static const map<int,int> INTERFACE_RELATIVE_INDEX = {{0,8}, {1,7}, {2,6}, {3,5}, {4,4}, {5,3}, {6,2}, {7,1}, {8,0}};
+static const map<int,int> INTERFACE_UNCHANGE_INDEX = {{0,0}, {1,1}, {2,2},
+                            {3,3}, {4,4}, {5,5},
+                            {6,6}, {7,7}, {8,8}};
+static const map<int,int> INTERFACE_LEFT_INDEX = {{0,6}, {1,3}, {2,0},
+                        {3,7}, {4,4}, {5,1},
+                        {6,8}, {7,5}, {8,2}};
+static const map<int,int> INTERFACE_RIGHT_INDEX = {{0,2}, {1,5}, {2,8},
+                         {3,1}, {4,4}, {5,7},
+                         {6,0}, {7,3}, {8,6}};
+static const map<int,int> INTERFACE_AROUND_INDEX = {{0,8}, {1,7}, {2,6},
+                          {3,5}, {4,4}, {5,3},
+                          {6,2}, {7,1}, {8,0}};
+static const map<int,int> INTERFACE_MIRROR_INDEX = {{0,2}, {1,1}, {2,0},
+                          {3,5}, {4,4}, {5,3},
+                          {6,8}, {7,7}, {8,6}};
+static const map<int,int> INTERFACE_MIRRORLF_INDEX = {{0,0}, {1,3}, {2,6},
+                            {3,1}, {4,4}, {5,7},
+                            {6,2}, {7,5}, {8,8}};
+static const map<int,int> INTERFACE_MIRRORRT_INDEX = {{0,8}, {1,5}, {2,2},
+                            {3,7}, {4,4}, {5,1},
+                            {6,6}, {7,3}, {8,0}};
+static const map<int,int> INTERFACE_MIRRORAR_INDEX = {{0,6}, {1,7}, {2,8},
+                            {3,3}, {4,4}, {5,5},
+                            {6,0}, {7,1}, {8,2}};
 // Class Slot():
 //     x = None
 //     y = None
@@ -282,18 +310,15 @@ using namespace std;
 
 class TileResource
 {
-private:
-    string name="name";
-    string image="./1.png";
-    string char_img="#";
-
 public:
     TileResource(string name, string image,string char_img,string* interface,bool* rotate);
     TileResource();
     ~TileResource();
     string* interface;  // 0-8 totally 9 directions , 4 is this tile self
     bool* rotate;  // 0 is unchanged, 1-3 left,right,around, 4 is mirror, 5-7 are left,right,around to mirror
-
+    string name="name";
+    string image="./1.png";
+    string char_img="#";
 };
 
 TileResource::TileResource(string name, string image,string char_img,string* interface,bool* rotate)
@@ -328,6 +353,7 @@ public:
     ~Tile() {
         // printf("tile destructor call");
     }
+    string get_str_img(){return resource->char_img;}
 };
 struct Tiles_and_size
 {
@@ -349,6 +375,7 @@ Tiles_and_size transform_to_tiles(TileResource *resource,int size_r){
     Tiles_and_size res = {ret,size};
     return res;
 }
+
 class Slot
 {
 private:
@@ -358,7 +385,6 @@ private:
     Tile *choice[1024];
     int choice_size; 
     bool finish; 
-    Tile *tile; 
 public:
     Slot(int x, int y,Tile **choice,int choice_size):x(x),y(y),choice_size(choice_size),finish(false) {
         for (int i=0;i<choice_size;i++){
@@ -369,6 +395,7 @@ public:
     ~Slot() {
         // printf("Slot-(%d,%d) destructor call\n",x,y);
     }
+    Tile *tile; 
     void init(int x, int y,Tile **choice,int choice_size){
         this->x=x;
         this->y=y;
@@ -421,13 +448,7 @@ public:
         
         return true;
     }
-    void auto_fill(bool border){
-        while (!this->is_finish())
-        {
-            Slot &s = this->choose_lowentropy_slot();
-            s.random_confirm();
-        }
-    }
+
     Slot &get_position_slot(int x,int y){
         return matrix[x][y];
     }
@@ -444,7 +465,38 @@ public:
         }
         return ret;
     }
-
+    vector<Slot *> get_border_slots(){
+        vector<Slot *> ret;
+        for (int i = lenth - 1; i >= 0; i--)
+        {
+            for (int j = width - 1; j >= 0; j--)
+            {
+                if(j == 0 or i == 0 or j == this->width - 1 or i == this->lenth - 1){
+                    Slot *p = &this->get_position_slot(j,i);
+                    ret.push_back(p);
+                }
+            }
+        }
+        return ret;
+    }
+    vector<vector<int> > get_position_interface_info(int x,int y){
+        Slot &s=this->get_position_slot(x,y);
+        vector<vector<int> > ret(9,vector<int>(9,-1));
+        if(s.is_finish()){return ret;}
+        else{
+            Slot **adj_slots = this->get_position_adjacent_slots(x,y);
+            for (int i = 9 - 1; i >= 0; i--)
+            {
+                adj_slots[i]->fill_possible_info(ret[i],INTERFACE_RELATIVE_INDEX.find(i));
+            }
+            return ret;
+        }
+    }
+    int refresh_position_choice(int x,int y){
+        vector<vector<int> > interface_info = this->get_position_interface_info(x,y);
+        Slot &s=this->get_position_slot(x,y);
+        return s.refresh_choice(interface_info);
+    }
     Slot &choose_lowentropy_slot(){
         int min_lenth = max_entropy;
         Slot *minslots[1024];
@@ -473,82 +525,47 @@ public:
                 }
             }
         }
-
-        default_random_engine e;
-        uniform_int_distribution<unsigned> u(0, 9);
-    
-        
+        return *minslots[rand() % minslots_t];
         }
-}
-//     def choose_lowentropy_slot(self):
-//         minchoiceslots = []
-//         min_lenth = float("inf")
-//         for s in self.slots:
-//             if s.finish:
-//                 continue
-//             n = self.refresh_position_choice(s.x, s.y)
-//             if n == 0:
-//                 raise AllAttemptFail
-//             else:
-//                 if n == min_lenth:
-//                     minchoiceslots.append(s)
-//                 elif n > min_lenth:
-//                     continue
-//                 else:
-//                     min_lenth = n
-//                     minchoiceslots = [s]
-//         return random.choice(minchoiceslots)
-//     def auto_fill(self):
-//         while not self.finish:
-//             s = self.choose_lowentropy_slot()
-//             s.random_confirm()
-//     def get_position_slot(self, x, y):
-//         if 0 <= x < self.width and 0 <= y < self.lenth:
-//             return self.matrix[x][y]
-//         else:
-//             return None
-//     def get_position_adjacent_slots(self, x, y):
-//         ret = []
-//         for xx in (x - 1, x, x + 1):
-//             for yy in (y - 1, y, y + 1):
-//                 ret.append(self.get_position_slot(xx, yy))
-//         return ret
-//     def get_position_interface_info(self, x, y):
-//         s = self.matrix[x][y]
-//         if s.finish:
-//             return None
-//         else:
-//             adjacent_slots = self.get_position_adjacent_slots(x, y)
-//             info = [None] * 9
-//             for ind, s in enumerate(adjacent_slots):
-//                 info[ind] = s.get_direction_possible_interfaces(INTERFACE_RELATIVE_INDEX[ind])
-//             return info
-//     def refresh_position_choice(self, x, y):
-//         s = self.matrix[x][y]
-//         interface_info = self.get_position_interface_info(x, y)
-//         return s.refresh_choice(interface_info)
-//     def get_border_slots(self):
-//         return [s for s in self.slots if s.is_border(x=self.width, y=self.lenth)]
-//     def fill_borders(self, tile):
-//         border_slots = self.get_border_slots()
-//         for s in border_slots:
-//             s.comfirm_tile(tile)
-//     def show(self, str_out=False):
-//         if self.finish:
-//             if str_out:
-//                 self.str_output()
-//             else:
-//                 stack_img = N.vstack([N.hstack([s.tile.image for s in row]) for row in self.matrix])
-//                 # cv2.imshow("img",stack_img)
-//                 cv2.imwrite("out.png", stack_img)
-//         else:
-//             print("Not finish Yet")
-//     def str_output(self):
-//         for i in self.matrix:
-//             for s in i:
-//                 print(s.tile.char_img, end="")
-//             print("")
+    void fill_borders(Tile *t){
+        vector<Slot *> border_slots = this->get_border_slots();
+        int s = border_slots.size();
+        for (int i = s - 1; i >= 0; i--)
+        {
+            border_slots[i]->comfirm_tile(t);
+        }
+    }
+    void auto_fill(bool border){
+        if(border){
+                string inters[] = {"x", "x", "x", "x", "x", "x", "x", "x", "x"};
+                bool rotates[] = {true,false,false,false,false,false,false,false};
+                TileResource tr{"None","null.png","#",inters,rotates};
+                TileResource *p;
+                p = &tr;
+                int size=1;
+                Tiles_and_size tiles = transform_to_tiles(p,size);
+            this->fill_borders(tiles.tiles[0]);
+            
+        }
+        while (!this->is_finish())
+        {
+            Slot &s = this->choose_lowentropy_slot();
+            s.random_confirm();
+        }
+    }
+    void str_output(){
+        for (int i = lenth - 1; i >= 0; i--)
+        {
+            cout<<"\t";
+            for (int j = width - 1; j >= 0; j--){
+                cout<<matrix[j][i].tile->get_str_img();
+            }
+            cout<<"\n";
+        }
+
+    }
 };
+
 class MapManager
 {
 private:
