@@ -45,11 +45,12 @@ class JuziContoller():
         relation_ju = PinJuRelation.get_pin_relations(pin_id)
         ret = {}
         for r in relation_ju:
-            ret.update({r.ju_id: r.position})
+            ret.update({r.ju_id: r.hanzi})
         return ret
 
     @classmethod
     def name_quote_info(cls, name: Name_pin):
+        pin_strs = [name.family_name]+name.given_name
         infos = [cls.pin_quote_info(name.family_name)] + [cls.pin_quote_info(x) for x in name.given_name]
         lenth = len(infos)
         if lenth != 3:
@@ -73,7 +74,7 @@ class JuziContoller():
                 "choice": []
             }
             for j in s:
-                pos = [infos[i].get(j) for i in range(lenth)]
-                temp["choice"].append({"pos": pos, "ju_id": j})
+                zis = [infos[i].get(j,pin_strs[i]) for i in range(lenth)]
+                temp["choice"].append({"name": "".join(zis), "ju_id": j})
             ret.append(temp)
         return ret
