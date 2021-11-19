@@ -3,6 +3,9 @@ import os
 import threading
 import time
 from datetime import datetime
+from urllib import request
+from urllib.error import HTTPError
+
 import requests
 
 
@@ -29,14 +32,18 @@ class Scraper(threading.Thread):
             with open(file_path,encoding="utf-8") as f:
                 html = f.read()
         except:
-            resp = self.session.get(url, headers=self.headers, verify=False)
+            resp = self.session.get(url, headers=self.headers)
             html = resp.text
             if resp.status_code>=400:
-                logging.warning(f"url:{url} 请求失败!")
-                return
-            else:
-                with open(file_path,"w",encoding="utf-8") as f:
-                    f.write(html)
+                try:
+                    req = request.Request(url, headers=self.headers)
+                    data = request.urlopen(req)
+                    html = data.read().decode()
+                except HTTPError:
+                    logging.warning(f"url:{url} 请求失败!")
+                    return
+            with open(file_path,"w",encoding="utf-8") as f:
+                f.write(html)
         return html
     def run(self):
         while True:

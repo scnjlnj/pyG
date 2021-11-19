@@ -1,6 +1,7 @@
 CACHE_FOLDER = "cache_htmls"
-HEADER = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_0) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.56 Safari/535.11",
-          'Accept-Encoding': 'identity',
+HEADER = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36",
+          "cookie":"__gads=ID=502c110dab75cdb6-22ed576fb3ce0058:T=1637226697:RT=1637226697:S=ALNI_MYMc3WHMHAnt3ajBflTVLW1JG-7ng; _pbjs_userid_consent_data=3524755945110770; _pubcid=d4e7486b-3628-4d07-9651-cf9f229d2da3; _gid=GA1.2.1778394229.1637286154; cto_bidid=-U2kdl9VcTVENWxibTJnWG9qd1FaVnBvSVBicnd4bTV5VUd4d3JVOGpFNyUyRjZUODVVQ3BibVZXR1VKNmJxZXhHNjNHV2I1TVpLaFVPZWJ2Qk9oJTJGMDA1U1pqRmVEdXNDTmc1SkU1dmlwNTVLNUhRWkQwWkx0QVRTdThNMEMlMkJpeEJhZGQ2cA; cto_bundle=6l4BmF9YJTJCdE8lMkZ2aFNQWUJSUWl0NmpaVkJJMDZBSXY0REVBVmgzRmJEelZwWVA5QmdWaEdFS0x1VU9ORUh6RjV3OGJEMUV1RTY3MjdmNzF4MVFrOGJXSDU3MjQlMkZHR292VXFJaXY5WURRZXc1JTJGWEhXQVluMFlLUkxHUDdQc0JoYlhpJTJCSG5LNEhnUmNqM3ZFaEhMb09wUmFZTUlRJTNEJTNE; wpmanga-reading-history=W3siaWQiOjI0NzkxMywiYyI6IjM2MzU0MSIsInAiOjEsImkiOiIiLCJ0IjoxNjM3Mjg3Mzc5fV0%3D; _ga_J2QY0CKZDL=GS1.1.1637311458.3.0.1637311458.0; _ga=GA1.1.958934747.1637226699"
+          # 'Accept-Encoding': 'identity',
           }
 KEEP_ALIVE = False
 class MONGO_CONFIG():
