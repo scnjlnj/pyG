@@ -33,7 +33,10 @@ int bi_insect(int n,vector<int>& list,int data_size) {
         return 1;
     }
 int main(){
-    string a = to_string(1);
-    cout<<a;
+    vector<string> ret(3,"");
+    for(int i=0;i<3;i++){
+        ret[i]=to_string(i+1);
+    } 
+    for(int i)
     return 0;
 }

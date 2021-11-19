@@ -1,0 +1,31 @@
+host:mivadevice
+设备分类
+-checkin
+    PATCH/api/v1/devicecategory/checkin/{obj_id}
+-checkout
+    PATCH/api/v1/devicecategory/checkout/{obj_id}
+-export
+    GET/api/v1/devicecategory/export/{obj_id}
+-import-表单   content_types=['multipart/form-data']
+    POST/api/v1/devicecategory/import/{pid}
+设备实例
+-activate
+    PATCH/api/v1/device/activate/{obj_id}
+-deactivate
+    PATCH/api/v1/device/deactivate/{obj_id}
+-checkin
+    PATCH/api/v1/device/checkin/{obj_id}
+-checkout
+    PATCH/api/v1/device/checkout/{obj_id}
+-export
+    GET/api/v1/device/export/{obj_id}
+-import-表单   content_types=['multipart/form-data']
+    POST/api/v1/device/import/{pid}
+host:mivageo
+评估报告
+-上传报告
+    POST/api/v1/report/import  content_types=['multipart/form-data']
+-返回pdf文件流
+    GET/api/v1/report/{obj_id}
+-报告列表
+	GET/api/v1/report

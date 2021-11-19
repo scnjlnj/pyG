@@ -39,7 +39,7 @@ class PinYin(Base):
             session.add_all([cls(pinyin=p) for p in [cls.get_pinyin(pin=d, sheng=i) for i in range(1,5)]])
         session.commit()
         session.close()
-
+bisect
     @classmethod
     def get_id(cls, pin, session=None):
         if not session:
