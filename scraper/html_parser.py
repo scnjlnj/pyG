@@ -22,22 +22,35 @@ class ManhwaWorldParser(BaseParser):
 
     def parse_images(self, html) -> list:
         """get image urls on detail page"""
-        pass
+        soup = self.html_2_soup(html)
+
+        def img_tag(tag):
+            return tag.name == "img" and tag.has_attr('class') and tag.attrs["class"][0] == "wp-manga-chapter-img"
+
+        img_tags = soup.find_all(img_tag)
+        return img_tags
 
     def get_chapters_list(self,html) -> list:
-        """get images docs list for mongo"""
+        """get chapters docs list for mongo"""
         chaps = self.parse_chapters(html)
         docs = []
         for ind,c in enumerate(chaps[::-1]):
             doc = {"url":c.attrs["href"],
-                   "name":c.name.strip(""),
+                   "name":c.string.strip(),
                    "index":ind
             }
             docs.append(doc)
         return docs
     def get_images_list(self,html) -> list:
         """get images docs list for mongo"""
-        pass
+        images = self.parse_images(html)
+        docs = []
+        for ind, c in enumerate(images):
+            doc = {"url": c.attrs["src"].strip(),
+                   "index": ind
+                   }
+            docs.append(doc)
+        return docs
 
 ParserMAP = {
     1: ManhwaWorldParser
