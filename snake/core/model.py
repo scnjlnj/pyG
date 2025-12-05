@@ -67,7 +67,7 @@ class Snake(BaseObject):
         self.static = False
         self.alive = True
         self.tail_char = "⚪"
-        self.vel = 10
+        self.vel = 20
         self.direction = "Up"
         self.motivation = 0
     def __str__(self):

@@ -6,14 +6,12 @@ from pynput import keyboard
 keyboard_inputs = Queue()
 def add_press_event(key):
     global keyboard_inputs
-    key.action=1
     vk = key.vk if hasattr(key,"vk") else str(key)
     keyboard_inputs.put_nowait((vk,1))
 def add_release_event(key):
     global keyboard_inputs
-    key.action=-1
     vk = key.vk if hasattr(key,"vk") else str(key)
-    keyboard_inputs.put_nowait((vk,1))
+    keyboard_inputs.put_nowait((vk,-1))
 keyboard_listener = keyboard.Listener(
     on_press=add_press_event,
     on_release=add_release_event)
@@ -34,7 +32,7 @@ class KeyBoardController(BaseController):
         self._event_list = keyboard_inputs
         self._listener = keyboard_listener
         self._listener.start()
-
+        self.exit_flag = False
 if __name__ == '__main__':
 
     c = KeyBoardController()
